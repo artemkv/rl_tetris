@@ -1,0 +1,3 @@
+- eliminate full rows
+- keep score
+- end game when no space to emerge
