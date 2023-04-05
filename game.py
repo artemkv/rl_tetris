@@ -38,6 +38,7 @@ class Game:
                 self.sink()
             else:
                 self.land()
+                self.emerge()
             self.frame = 0
         return 0  # todo: reward
 
@@ -137,7 +138,6 @@ class Game:
                 if (self.tetramino_y + y < WELL_DEPTH and self.tetramino[y][x] == 1):
                     self.well[self.tetramino_y +
                               y][self.tetramino_x + x] = self.tetramino[y][x]
-        self.emerge()
 
     def emerge(self):
         self.tetramino_shape = self.get_random_shape()
