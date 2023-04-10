@@ -20,7 +20,6 @@ class Action(Enum):
 class Game:
     def __init__(self):
         self.terminated = False
-        self.score = 0
         self.well = np.zeros((WELL_DEPTH, WELL_WIDTH))
 
         self.emerge()
@@ -29,6 +28,9 @@ class Game:
     def get_state(self):
         # todo: what should be in state?
         return self.well.reshape(1, WELL_DEPTH * WELL_WIDTH)
+
+    def is_terminated(self):
+        return self.terminated
 
     def next(self, action):
         self.apply_action(action)
@@ -39,8 +41,11 @@ class Game:
             else:
                 self.land()
                 self.emerge()
+                if (self.is_game_over()):
+                    self.terminated = True
+                    return 0
             self.frame = 0
-        return 0  # todo: reward
+        return 1  # todo: reward
 
     def get_random_shape(self):
         return random.randint(0, 6)
@@ -80,7 +85,7 @@ class Game:
         for y in range(th):
             for x in range(tw):
                 if (self.tetramino[y][x] == 1 and
-                        (self.touches_left(x) or self.would_clash_at_position(x - 1, y))):
+                        (self.touches_left(x) or self.clashes_at(x - 1, y))):
                     return False
         return True
 
@@ -89,7 +94,7 @@ class Game:
         for y in range(th):
             for x in range(tw):
                 if (self.tetramino[y][x] == 1 and
-                        (self.touches_right(x) or self.would_clash_at_position(x + 1, y))):
+                        (self.touches_right(x) or self.clashes_at(x + 1, y))):
                     return False
         return True
 
@@ -98,7 +103,7 @@ class Game:
         for y in range(th):
             for x in range(tw):
                 if (self.tetramino[y][x] == 1 and
-                        (self.on_the_floor(y) or self.would_clash_at_position(x, y + 1))):
+                        (self.on_the_floor(y) or self.clashes_at(x, y + 1))):
                     return False
         return True
 
@@ -108,7 +113,7 @@ class Game:
         for y in range(th):
             for x in range(tw):
                 if (new_tetramino[y][x] == 1 and
-                        (self.sticking_out(x, y) or self.would_clash_at_position(x, y))):
+                        (self.sticking_out(x, y) or self.clashes_at(x, y))):
                     return False
         return True
 
@@ -125,7 +130,7 @@ class Game:
         return (self.tetramino_y + y >= WELL_DEPTH
                 or self.tetramino_x + x < 0 or self.tetramino_x + x >= WELL_WIDTH)
 
-    def would_clash_at_position(self, x, y):
+    def clashes_at(self, x, y):
         return self.well[self.tetramino_y + y][self.tetramino_x + x] == 1
 
     def sink(self):
@@ -145,6 +150,14 @@ class Game:
         self.tetramino = tetraminos[self.tetramino_shape][self.tetramino_angle]
         self.tetramino_x = TETRAMINO_START_X_POS
         self.tetramino_y = 0
+
+    def is_game_over(self):
+        (th, tw) = self.tetramino.shape
+        for y in range(th):
+            for x in range(tw):
+                if (self.tetramino[y][x] == 1 and self.clashes_at(x, y)):
+                    return True
+        return False
 
     def draw(self):
         (h, w) = self.well.shape

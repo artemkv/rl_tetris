@@ -12,7 +12,7 @@ actions = [Action.LEFT, Action.RIGHT, Action.ROTATE_LEFT,
 
 if __name__ == "__main__":
     game = Game()
-    for r in range(1000000):
+    while not game.is_terminated():
         clear()
         game.draw()
         time.sleep(0.01)
