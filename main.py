@@ -2,6 +2,7 @@ import numpy as np
 import time
 import random
 from game import Game, Action, WELL_DEPTH, WELL_WIDTH
+from network import NeuralNetwork
 
 # todo
 import os
@@ -11,8 +12,8 @@ def clear(): return os.system('cls')
 actions = [Action.LEFT, Action.RIGHT, Action.ROTATE_LEFT,
            Action.ROTATE_RIGHT, Action.DO_NOTHING]
 
-EXPERIENCE_SIZE = 100000
-TERMINAL_STATES = 10000
+EXPERIENCE_SIZE = 10  # 0000
+TERMINAL_STATES = 1  # 0000
 NON_TERMINALE_STATES = EXPERIENCE_SIZE - TERMINAL_STATES
 
 STATE_SIZE = WELL_DEPTH * WELL_WIDTH
@@ -26,15 +27,29 @@ if __name__ == "__main__":
     non_terminal_cnt = 0
     games_played = 0
 
+    nn = NeuralNetwork(STATE_SIZE)
+
+    def get_action(state):
+        action_values = nn.forward(state)
+
+        print(action_values)
+
+        return np.argmax(action_values)
+
+        # implement epsilon-greedy
+        # return random.randint(0, 4)
+
     while cnt < EXPERIENCE_SIZE:
         game = Game()
         games_played += 1
 
-        print('.', end='', flush=True)
+        # print('.', end='', flush=True)
 
         while not game.has_terminated() and cnt < EXPERIENCE_SIZE:
+            clear()
+
             current_state = game.get_state()
-            action_idx = random.randint(0, 4)
+            action_idx = get_action(current_state)
             action = actions[action_idx]
             reward = game.next(action)
             next_state = game.get_state()
@@ -56,16 +71,13 @@ if __name__ == "__main__":
                 exp_buffer[cnt][STATE_SIZE+2:STATE_SIZE*2+3] = next_state
                 cnt += 1
 
-            # clear()
             # print(current_state)
-            # game.draw()
-            # time.sleep(0.1)
+            game.draw()
+            time.sleep(0.1)
 
     print(f'Games played: {games_played}')
 
     SAMPLE_NO = 400
-    print(exp_buffer[SAMPLE_NO][0:STATE_SIZE].reshape(
-        (WELL_DEPTH, WELL_WIDTH)))
-    print(exp_buffer[SAMPLE_NO][STATE_SIZE:STATE_SIZE + 1])
-    print(exp_buffer[SAMPLE_NO][STATE_SIZE+2:STATE_SIZE *
-          2+3].reshape((WELL_DEPTH, WELL_WIDTH)))
+    # print(exp_buffer[SAMPLE_NO][0:STATE_SIZE].reshape((WELL_DEPTH, WELL_WIDTH)))
+    # print(exp_buffer[SAMPLE_NO][STATE_SIZE:STATE_SIZE + 1])
+    # print(exp_buffer[SAMPLE_NO][STATE_SIZE+2:STATE_SIZE * 2+3].reshape((WELL_DEPTH, WELL_WIDTH)))
