@@ -43,3 +43,6 @@ class NeuralNetwork:
 
     def relu(self, x):
         return np.where(x > 0, x, 0)
+
+    def backprop(self, targets):
+        x = 1

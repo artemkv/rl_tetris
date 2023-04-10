@@ -25,6 +25,8 @@ class Game:
         self.emerge()
         self.frame = 0
 
+        self.score = 0
+
     def get_state(self):
         state = self.well.copy()
 
@@ -41,6 +43,7 @@ class Game:
     def next(self, action):
         self.apply_action(action)
         self.frame += 1
+        self.score += 1
         if (self.frame == FRAMES_PER_DROP):
             if (self.has_room_below()):
                 self.sink()
@@ -49,7 +52,7 @@ class Game:
                 self.emerge()
                 if (self.is_game_over()):
                     self.terminated = True
-                    return 0
+                    return 1  # todo: ?
             self.frame = 0
         return 1  # todo: reward
 
