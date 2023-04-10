@@ -26,10 +26,16 @@ class Game:
         self.frame = 0
 
     def get_state(self):
-        # todo: what should be in state?
-        return self.well.reshape(1, WELL_DEPTH * WELL_WIDTH)
+        state = self.well.copy()
 
-    def is_terminated(self):
+        (th, tw) = self.tetramino.shape
+        for y in range(th):
+            for x in range(tw):
+                if (self.tetramino[y][x] == 1):
+                    state[self.tetramino_y + y][self.tetramino_x + x] = 1
+        return state.reshape(1, WELL_DEPTH * WELL_WIDTH)[0]
+
+    def has_terminated(self):
         return self.terminated
 
     def next(self, action):
