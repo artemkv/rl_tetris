@@ -105,12 +105,13 @@ def train(nn, episodes):
 
                         # print(f'predicted: {np.max(action_values)}, target: {target}')
 
-                        sample_loss = loss(np.max(action_values), target)
+                        sample_loss = loss(
+                            action_values[int(action_idx)], target)
 
                         nn.backprop(targets)
 
                         # new_action_values = nn.forward(state)
-                        # new_sample_loss = loss(new_action_values[np.argmax(action_values)], target)
+                        # new_sample_loss = loss(new_action_values[int(action_idx)], target)
 
                         # print(f'before: {sample_loss}, after: {new_sample_loss}')
 
@@ -133,7 +134,7 @@ def train(nn, episodes):
 
 if __name__ == "__main__":
     nn = NeuralNetwork(STATE_SIZE)
-    nn.load("_trained_2000")
+    # nn.load("_trained_2000")
     # nn.save("_initial")
-    # train(nn, EPISODES)
+    train(nn, EPISODES)
     play(nn)
