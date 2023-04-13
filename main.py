@@ -16,14 +16,23 @@ actions = [Action.LEFT, Action.RIGHT, Action.ROTATE_LEFT,
 
 STATE_SIZE = WELL_DEPTH * WELL_WIDTH
 
-EPISODES = 1000
-NON_TERMINAL_STATE_CAPACITY = 100
-TERMINAL_STATE_CAPACITY = 10
+EPISODES = 10000000
+NON_TERMINAL_STATE_CAPACITY = 900
+TERMINAL_STATE_CAPACITY = 100
 
-TRAINING_SIZE = 10
-TESTING_SIZE = 2
+TRAINING_SIZE = 100
+TESTING_SIZE = 1
 
 GAMMA = 0.9
+
+SWAP_AFTER_EPISODES = 10
+
+EPSILON = 0.1
+
+
+def loss(y, t):
+    return (t - y) * (t - y)
+
 
 if __name__ == "__main__":
 
@@ -31,20 +40,22 @@ if __name__ == "__main__":
         NON_TERMINAL_STATE_CAPACITY, TERMINAL_STATE_CAPACITY, STATE_SIZE)
 
     nn = NeuralNetwork(STATE_SIZE)
+    nn1 = NeuralNetwork(STATE_SIZE)
 
     def get_action(state):
-        action_values = nn.forward(state)
-        # print(action_values)
-        return np.argmax(action_values)
-        # implement epsilon-greedy
-        # return random.randint(0, 4)
+        p = np.random.random()
+        if p < EPSILON:
+            return random.randint(0, 4)
+        else:
+            action_values = nn.forward(state)
+            return np.argmax(action_values)
 
     for e in range(EPISODES):
         game = Game()
-        print('.', end='', flush=True)
 
         while not game.has_terminated():
             # clear()
+            print('.', end='', flush=True)
 
             current_state = game.get_state()
             action_idx = get_action(current_state)
@@ -63,21 +74,44 @@ if __name__ == "__main__":
                 (train_data, test_data) = exp_buffer.get_train_test(
                     TRAINING_SIZE, TESTING_SIZE)
 
-                # TODO: loop
-                sample = train_data[0]
-                (state, action_idx, reward, next_state,
-                    is_terminal) = exp_buffer.extract_sample_data(sample)
+                total_loss = 0
+                while True:
+                    prev_loss = total_loss
+                    total_loss = 0
 
-                target = reward
-                if not is_terminal:
-                    next_state_action_values = nn.forward(
-                        next_state)  # todo: use copy
-                    target += GAMMA * np.max(next_state_action_values)
+                    for sample in train_data:
+                        (state, action_idx, reward, next_state,
+                            is_terminal) = exp_buffer.extract_sample_data(sample)
 
-                action_values = nn.forward(state)
-                targets = np.copy(action_values)
-                targets[np.argmax(action_values)] = target
+                        target = reward
+                        if not is_terminal:
+                            next_state_action_values = nn1.forward(next_state)
+                            target += GAMMA * np.max(next_state_action_values)
 
-                nn.backprop(targets)
+                        action_values = nn.forward(state)
+                        targets = np.copy(action_values)
+                        targets[np.argmax(action_values)] = target
+
+                        # print(                            f'predicted: {np.max(action_values)}, target: {target}')
+
+                        sample_loss = loss(np.max(action_values), target)
+
+                        nn.backprop(targets)
+
+                        new_action_values = nn.forward(state)
+                        new_sample_loss = loss(
+                            new_action_values[np.argmax(action_values)], target)
+
+                        # print(                            f'before: {sample_loss}, after: {new_sample_loss}')
+
+                        total_loss += sample_loss
+
+                    total_loss = total_loss / TRAINING_SIZE
+                    if abs(total_loss - prev_loss) < 0.001:
+                        # print(f'Loss: {total_loss}')
+                        break
 
         print(f'Game score: {game.score}')
+
+        # if (e % SWAP_AFTER_EPISODES):
+        #    nn1 = nn.copy()

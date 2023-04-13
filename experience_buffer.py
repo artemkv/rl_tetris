@@ -77,7 +77,7 @@ class ExperienceBuffer:
 
     def extract_sample_data(self, sample):
         return (sample[0:self.state_size],
-                sample[self.state_size:self.state_size + 1],
-                sample[self.state_size + 1:self.state_size + 2],
+                sample[self.state_size:self.state_size + 1][0],
+                sample[self.state_size + 1:self.state_size + 2][0],
                 sample[self.state_size + 2:self.state_size * 2+2],
-                sample[self.state_size*2 + 2:self.state_size * 2 + 3])
+                sample[self.state_size*2 + 2:self.state_size * 2 + 3][0])
