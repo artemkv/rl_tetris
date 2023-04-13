@@ -3,10 +3,13 @@ import random
 from tetraminos import tetraminos
 from enum import Enum
 
-WELL_DEPTH = 20
+WELL_DEPTH = 8
 WELL_WIDTH = 10
-FRAMES_PER_DROP = 5
+FRAMES_PER_DROP = 3
 TETRAMINO_START_X_POS = 3
+
+
+SHAPES_USED = 1
 
 
 class Action(Enum):
@@ -57,7 +60,7 @@ class Game:
         return 1  # todo: reward
 
     def get_random_shape(self):
-        return random.randint(0, 6)
+        return random.randint(0, SHAPES_USED - 1)
 
     def apply_action(self, action):
         if action == Action.LEFT and self.has_room_left():

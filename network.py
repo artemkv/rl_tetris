@@ -28,9 +28,17 @@ class NeuralNetwork:
 
     def copy(self):
         nn = NeuralNetwork(self.INPUT_SIZE)
-        # nn.WH = np.copy(self.WH)
-        # nn.WO = np.copy(self.WO)
+        nn.WH = np.copy(self.WH)
+        nn.WO = np.copy(self.WO)
         return nn
+
+    def save(self, filename):
+        np.savetxt(f'{filename}_hid.csv', self.WH, delimiter=',')
+        np.savetxt(f'{filename}_out.csv', self.WO, delimiter=',')
+
+    def load(self, filename):
+        self.WH = np.genfromtxt(f'{filename}_hid.csv', delimiter=',')
+        self.WO = np.genfromtxt(f'{filename}_out.csv', delimiter=',')
 
     def forward(self, X):
         # save input
