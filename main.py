@@ -15,18 +15,23 @@ actions = [Action.LEFT, Action.RIGHT, Action.ROTATE_LEFT,
 
 STATE_SIZE = WELL_DEPTH * WELL_WIDTH
 
-EPISODES = 100000
-NON_TERMINAL_STATE_CAPACITY = 200
-TERMINAL_STATE_CAPACITY = 100
+EPISODES = 1000000
+NON_TERMINAL_STATE_CAPACITY = 2000
+TERMINAL_STATE_CAPACITY = 1000
 
 TRAINING_SIZE = 50
 TESTING_SIZE = 1
 
 GAMMA = 0.9
 
-SWAP_AFTER_EPISODES = 1000
+SWAP_AFTER_EPISODES = 100
 
-EPSILON = 0.1
+EPSILON = 0.001  # 0.001  # 0.2
+RANDOM_STREAK = 3
+
+on_random_streak = False
+random_streak_cnt = 0
+
 
 TRAIN_LOSS = 0.01
 
@@ -35,13 +40,47 @@ def loss(y, t):
     return (t - y) * (t - y)
 
 
+def argmax_with_random_tie_break(aa):
+    max = aa.max()
+    return np.random.choice(np.where(aa == max)[0])
+
+
 def get_action(nn, state):
+    global on_random_streak
+    global random_streak_cnt
+
+    p = np.random.random()
+    if not on_random_streak and p < EPSILON:
+        random_streak_cnt = 0
+        on_random_streak = True
+        print('???')
+
+    if on_random_streak:
+        action = random.randint(0, 4)
+        # print('???')
+        random_streak_cnt += 1
+        if random_streak_cnt == RANDOM_STREAK:
+            on_random_streak = False
+        return action
+    else:
+        action_values = nn.forward(state)
+        return np.argmax(action_values)
+
+
+def get_action_1(nn, state):
     p = np.random.random()
     if p < EPSILON:
         return random.randint(0, 4)
     else:
         action_values = nn.forward(state)
+        # print(action_values)
+        # return argmax_with_random_tie_break(action_values)
         return np.argmax(action_values)
+
+
+def get_action_2(nn, state):
+    action_values = nn.forward(state)
+    return np.argmax(action_values)
 
 
 def play(nn):
@@ -49,7 +88,7 @@ def play(nn):
     while not game.has_terminated():
         clear()
         game.draw()
-        time.sleep(0.01)
+        time.sleep(0.02)
         action = actions[get_action(nn, game.get_state())]
         print(action)
         game.next(action)
@@ -131,10 +170,14 @@ def train(nn, episodes):
             nn.save(f'_trained_{e}')
             nn1 = nn.copy()
 
+    nn.save(f'_trained_{EPISODES}')
+
 
 if __name__ == "__main__":
     nn = NeuralNetwork(STATE_SIZE)
-    # nn.load("_trained_2000")
+    # nn.load("_trained_3000")
     # nn.save("_initial")
-    train(nn, EPISODES)
-    play(nn)
+    # train(nn, EPISODES)
+
+    for i in range(100):
+        play(nn)

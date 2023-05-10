@@ -3,3 +3,41 @@ https://towardsdatascience.com/reinforcement-learning-explained-visually-part-5-
 - eliminate full rows
 - keep score
 - end game when no space to emerge
+
+
+
+give it a time to stabilize on certain policy, by swapping nets often enough and exploring only occasionally
+
+2500 looks nice - stable 7 points
+3000 looks awesome
+
+then, when doing almost optimal strategy, suddenly starts to degrade and pick only one (1st) action
+
+my idea: terminal state is indifferent to the action, so the argmax always picks 1st one, and that seem to drive the algorithm left
+
+(another idea: initially, small changes impact the score a lot
+in a local minima, the small changes do not matter and get discarded
+the whole replay buffer gets filled with the same stuff
+nn becomes insensitive to the input and always predicts the same?
+not sure)
+
+fix: in case of same value action, pick randomly
+what happened: stopped picking always left, just started playing completely randomly at some point
+what happens is that action values get all zeros at some point, so this seem to be an actual issue, and this is why we picked always the first action
+
+problem is: all the weights become negative, so rely outputs all zeroes
+so, I'm facing dying relu
+suggestion seem to be to reduce the learning rate or use a leaky relu
+
+applied
+0.001 -> 0.0001
+and leaky relu
+
+tested: all good
+
+with EPSILON = 0.001, manages to learn to good enough level quite quickly (1300 iterations)
+
+
+next problem: exploration is very localized, does not lead to any visible improvement, so the networks is not interested in learning small deviations, gets stuck in good enough solution
+I think by exploring too little, with only square blocks, and little exploration, the replay buffer gets filled with all the same data, and effectively forgets all the previous states
+

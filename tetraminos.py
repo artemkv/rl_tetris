@@ -95,4 +95,5 @@ i_shape = [np.array([[0, 0, 1, 0, 0],
                      [0, 0, 0, 0, 0],
                      [0, 0, 0, 0, 0]])]
 
-tetraminos = [o_shape, s_shape, z_shape, j_shape, l_shape, t_shape, i_shape];
+# tetraminos = [o_shape, s_shape, z_shape, j_shape, l_shape, t_shape, i_shape];
+tetraminos = [o_shape, t_shape, l_shape, s_shape, z_shape, j_shape, i_shape]

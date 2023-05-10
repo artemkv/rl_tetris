@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 # learning rate
-alpha = 0.001
+alpha = 0.0001
 
 # hidden neurons
 NH = 100
@@ -46,11 +46,11 @@ class NeuralNetwork:
 
         # hidden layer calculations
         self.HO = X.dot(self.WH)
-        HO_relu = self.relu(self.HO)
+        HO_relu = self.leaky_relu(self.HO)
 
         # output layer calculations
         self.OO = HO_relu.dot(self.WO)
-        self.Y = self.relu(self.OO)
+        self.Y = self.leaky_relu(self.OO)
 
         return self.Y
 
@@ -63,12 +63,15 @@ class NeuralNetwork:
     def relu_derivative(self, x):
         return np.where(x > 0, 1, 0)
 
+    def leaky_relu_derivative(self, x):
+        return np.where(x > 0, 1, 0.01)
+
     def backprop(self, targets):
         # gradient on the error function
         err_grad = self.Y - targets
 
         # gradient on the output layer
-        grad_o = err_grad * self.relu_derivative(self.OO)
+        grad_o = err_grad * self.leaky_relu_derivative(self.OO)
 
         # gradient going to the weights of the output layer
         grad_wo = self.HO.reshape((1, NH)).T.dot(grad_o.reshape((1, NO)))
@@ -77,7 +80,7 @@ class NeuralNetwork:
         grad_h = grad_o.dot(self.WO.T)
 
         # gradient on the hidden layer
-        grad_h1 = grad_h * self.relu_derivative(self.HO)
+        grad_h1 = grad_h * self.leaky_relu_derivative(self.HO)
 
         # gradient going to the weights of the hidden layer
         grad_wh = self.X.reshape((1, self.INPUT_SIZE)).T.dot(

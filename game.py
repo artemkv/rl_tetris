@@ -3,13 +3,13 @@ import random
 from tetraminos import tetraminos
 from enum import Enum
 
-WELL_DEPTH = 8
+WELL_DEPTH = 10
 WELL_WIDTH = 10
 FRAMES_PER_DROP = 3
 TETRAMINO_START_X_POS = 3
 
 
-SHAPES_USED = 1
+SHAPES_USED = 3
 
 
 class Action(Enum):
